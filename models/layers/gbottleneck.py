@@ -1,16 +1,16 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.layers.gconv import GConv
+from models.layers.gconv_dgl import GConv
 
 
 class GResBlock(nn.Module):
 
-    def __init__(self, in_dim, hidden_dim, adj_mat, activation=None):
+    def __init__(self, in_dim, hidden_dim, dgl_g, activation=None):
         super(GResBlock, self).__init__()
 
-        self.conv1 = GConv(in_features=in_dim, out_features=hidden_dim, adj_mat=adj_mat)
-        self.conv2 = GConv(in_features=hidden_dim, out_features=in_dim, adj_mat=adj_mat)
+        self.conv1 = GConv(in_features=in_dim, out_features=hidden_dim, dgl_g=dgl_g)
+        self.conv2 = GConv(in_features=hidden_dim, out_features=in_dim, dgl_g=dgl_g)
         self.activation = F.relu if activation else None
 
     def forward(self, inputs):
@@ -26,14 +26,14 @@ class GResBlock(nn.Module):
 
 class GBottleneck(nn.Module):
 
-    def __init__(self, block_num, in_dim, hidden_dim, out_dim, adj_mat, activation=None):
+    def __init__(self, block_num, in_dim, hidden_dim, out_dim, dgl_g, activation=None):
         super(GBottleneck, self).__init__()
 
-        resblock_layers = [GResBlock(in_dim=hidden_dim, hidden_dim=hidden_dim, adj_mat=adj_mat, activation=activation)
+        resblock_layers = [GResBlock(in_dim=hidden_dim, hidden_dim=hidden_dim, dgl_g=dgl_g, activation=activation)
                            for _ in range(block_num)]
         self.blocks = nn.Sequential(*resblock_layers)
-        self.conv1 = GConv(in_features=in_dim, out_features=hidden_dim, adj_mat=adj_mat)
-        self.conv2 = GConv(in_features=hidden_dim, out_features=out_dim, adj_mat=adj_mat)
+        self.conv1 = GConv(in_features=in_dim, out_features=hidden_dim, dgl_g=dgl_g)
+        self.conv2 = GConv(in_features=hidden_dim, out_features=out_dim, dgl_g=dgl_g)
         self.activation = F.relu if activation else None
 
     def forward(self, inputs):

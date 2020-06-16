@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from models.backbones import get_backbone
 from models.layers.gbottleneck import GBottleneck
-from models.layers.gconv import GConv
+from models.layers.gconv_dgl import GConv
 from models.layers.gpooling import GUnpooling
 from models.layers.gprojection import GProjection
 
@@ -13,6 +13,8 @@ class P2MModel(nn.Module):
 
     def __init__(self, options, ellipsoid, camera_f, camera_c, mesh_pos):
         super(P2MModel, self).__init__()
+
+        # NOTE: we assume ellipsoid is already dgl graph
 
         self.hidden_dim = options.hidden_dim
         self.coord_dim = options.coord_dim
@@ -25,11 +27,11 @@ class P2MModel(nn.Module):
 
         self.gcns = nn.ModuleList([
             GBottleneck(6, self.features_dim, self.hidden_dim, self.coord_dim,
-                        ellipsoid.adj_mat[0], activation=self.gconv_activation),
+                        ellipsoid.dgl_g[0], activation=self.gconv_activation),
             GBottleneck(6, self.features_dim + self.hidden_dim, self.hidden_dim, self.coord_dim,
-                        ellipsoid.adj_mat[1], activation=self.gconv_activation),
+                        ellipsoid.dgl_g[1], activation=self.gconv_activation),
             GBottleneck(6, self.features_dim + self.hidden_dim, self.hidden_dim, self.last_hidden_dim,
-                        ellipsoid.adj_mat[2], activation=self.gconv_activation)
+                        ellipsoid.dgl_g[2], activation=self.gconv_activation)
         ])
 
         self.unpooling = nn.ModuleList([
@@ -45,7 +47,7 @@ class P2MModel(nn.Module):
                                       tensorflow_compatible=options.align_with_tensorflow)
 
         self.gconv = GConv(in_features=self.last_hidden_dim, out_features=self.coord_dim,
-                           adj_mat=ellipsoid.adj_mat[2])
+                           dgl_g=ellipsoid.dgl_g[2])
 
     def forward(self, img):
         batch_size = img.size(0)

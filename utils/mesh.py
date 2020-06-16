@@ -7,6 +7,7 @@ import trimesh
 from scipy.sparse import coo_matrix
 
 import config
+import dgl
 
 
 def torch_sparse_tensor(indices, value, size):
@@ -34,11 +35,14 @@ class Ellipsoid(object):
         # edge: num_edges * 2
         # faces: num_faces * 4
         # laplace_idx: num_pts * 10
-        self.edges, self.laplace_idx = [], []
+        self.edges, self.laplace_idx, self.dgl_g = [], [], []
 
         for i in range(3):
             self.edges.append(torch.tensor(fp_info[1 + i][1][0], dtype=torch.long))
             self.laplace_idx.append(torch.tensor(fp_info[7][i], dtype=torch.long))
+            src = fp_info[1 + i][1][0][:, 0]
+            tgt = fp_info[1 + i][1][0][:, 1]
+            self.dgl_g.append(dgl.DGLGraph((src, tgt)))
 
         # unpool index
         # num_pool_edges * 2
