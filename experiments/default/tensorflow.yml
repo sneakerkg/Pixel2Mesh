@@ -50,14 +50,13 @@ num_gpus: 1
 num_workers: 16
 optim:
   adam_beta1: 0.9
-  lr: 1.0e-06
-  lr_factor: 0.1
+  lr: 3.0e-05
+  lr_factor: 0.333
   lr_step:
-  - 30
-  - 45
+  - 40
   name: adam
   sgd_momentum: 0.9
-  wd: 1.0e-06
+  wd: 1.0e-05
 pin_memory: true
 summary_dir: summary
 test:

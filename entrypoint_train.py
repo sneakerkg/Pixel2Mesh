@@ -1,6 +1,9 @@
 import argparse
 import sys
 
+import numpy as np
+import torch
+
 from functions.trainer import Trainer
 from options import update_options, options, reset_options
 
@@ -36,4 +39,6 @@ def main():
 
 
 if __name__ == "__main__":
+    np.random.seed(1234)
+    torch.manual_seed(1234)    
     main()

@@ -43,6 +43,7 @@ class Ellipsoid(object):
             src = fp_info[1 + i][1][0][:, 0]
             tgt = fp_info[1 + i][1][0][:, 1]
             self.dgl_g.append(dgl.DGLGraph((src, tgt)))
+            self.dgl_g[-1].edata['chebmat'] = torch.tensor(fp_info[1 + i][1][1], dtype=torch.float)
 
         # unpool index
         # num_pool_edges * 2
