@@ -83,7 +83,7 @@ class GraphConv_Customized(nn.Module):
             shp = norm.shape + (1,) * (feat.dim() - 1)
             norm = torch.reshape(norm, shp)
             feat = feat * norm
-        
+
         if self._norm == 'left':
             degs = graph.in_degrees().to(feat.device).float().clamp(min=1)
             norm = 1.0 / degs
@@ -104,7 +104,7 @@ class GraphConv_Customized(nn.Module):
 
         # aggregate first then mult W
         graph.srcdata['h'] = mult_rst
-        
+
         if self._norm == 'chebmat':
             #graph.edata['chebmat'].to(feat.device)
             graph.to(feat.device)
@@ -156,7 +156,8 @@ class GConv(nn.Module):
         self.in_features = in_features
         self.out_features = out_features
 
-        self.dgl_g = dgl_g
+        #self.dgl_g = dgl_g
+        self.dgl_g = dgl_g.to("cuda")
         #self.gconv = dgl_nn.conv.GraphConv(in_features, out_features, bias=False)
         #self.gconv = dgl_nn.conv.ChebConv(in_features, out_features, 1, bias=False)
         self.gconv = GraphConv_Customized(in_features, out_features, norm='chebmat', bias=False)
@@ -176,6 +177,10 @@ class GConv(nn.Module):
         support_loop = torch.matmul(inputs, self.loop_weight)
         batch_size = inputs.shape[0]
         fea_dim = inputs.shape[-1]
+
+
+        #self.dgl_g = self.dgl_g.to(inputs.device)
+
         batch_dgl_g = dgl.batch([self.dgl_g for k in range(batch_size)])
         gcn_res = self.gconv(batch_dgl_g, inputs.view(-1, fea_dim)).reshape(support_loop.shape)
         output = gcn_res + support_loop
