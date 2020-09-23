@@ -1,0 +1,6 @@
+easydict
+pyyaml
+tensorboard
+tensorboardx
+trimesh
+shapely
